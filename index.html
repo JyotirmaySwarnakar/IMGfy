@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMGfy - Image Format Converter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #3a87fe;
+            --secondary-color: #2c6ed5;
+            --background-color: #3399ff;
+            --white: #ffffff;
+            --text-color: #ffffff;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Inter', 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .ripple-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: white;
+            animation: ripple 15s infinite;
+            box-shadow: 0px 0px 1px 0px #508fb9;
+        }
+
+        .small {
+            width: 200px;
+            height: 200px;
+            left: -100px;
+            bottom: -100px;
+        }
+
+        .medium {
+            width: 400px;
+            height: 400px;
+            left: -200px;
+            bottom: -200px;
+        }
+
+        .large {
+            width: 600px;
+            height: 600px;
+            left: -300px;
+            bottom: -300px;
+        }
+
+        .xlarge {
+            width: 800px;
+            height: 800px;
+            left: -400px;
+            bottom: -400px;
+        }
+
+        .xxlarge {
+            width: 1000px;
+            height: 1000px;
+            left: -500px;
+            bottom: -500px;
+        }
+
+        .shade1 { opacity: 0.2; }
+        .shade2 { opacity: 0.5; }
+        .shade3 { opacity: 0.7; }
+        .shade4 { opacity: 0.8; }
+        .shade5 { opacity: 0.9; }
+
+        @keyframes ripple {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(0.8); }
+        }
+
+        .site-header {
+            background-color: rgba(26, 28, 31, 0.8);
+            padding: 1rem;
+            width: 100%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .site-header-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--white);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .site-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: rgba(26, 28, 31, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1.5rem 0;
+            min-height: 300px;
+        }
+
+        #preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 0.5rem;
+            object-fit: contain;
+        }
+
+        .file-input-wrapper {
+            margin: 1rem 0;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-input-label, #convertBtn, #downloadLink {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 300px;
+            margin: 0.5rem auto;
+            text-align: center;
+        }
+
+        .file-input-label {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .file-input-label:hover {
+            background-color: var(--secondary-color);
+        }
+
+        #convertBtn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            margin: 1rem 0;
+        }
+
+        #convertBtn:disabled {
+            background-color: #a0c4fe;
+            cursor: not-allowed;
+        }
+
+        #downloadLink {
+            background-color: #28a745;
+            color: var(--white);
+        }
+
+        #downloadLink:hover {
+            background-color: #218838;
+        }
+
+        .loading {
+            display: none;
+            margin: 1rem 0;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+        }
+
+        .footer {
+            background-color: rgba(26, 28, 31, 0.8);
+            color: var(--white);
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        @media screen and (max-width: 600px) {
+            body {
+                font-size: 14px;
+            }
+
+            .container {
+                width: 95%;
+                margin: 1rem auto;
+                padding: 1rem;
+                border-radius: 0;
+            }
+
+            .site-header {
+                padding: 0.75rem;
+            }
+
+            .site-title {
+                font-size: 1.2rem;
+            }
+
+            .file-input-label, #convertBtn, #downloadLink {
+                max-width: 100%;
+                padding: 0.6rem 1rem;
+            }
+
+            #preview {
+                max-height: 250px;
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class='ripple-background'>
+        <div class='circle xxlarge shade1'></div>
+        <div class='circle xlarge shade2'></div>
+        <div class='circle large shade3'></div>
+        <div class='circle medium shade4'></div>
+        <div class='circle small shade5'></div>
+    </div>
+    
+    <header class="site-header">
+        <div class="site-header-content">
+            <span class="site-title">IMGfy</span>
+        </div>
+    </header>
+  
+    <main class="container">
+        <div class="file-input-wrapper">
+            <input type="file" id="fileInput" accept="image/*">
+            <label for="fileInput" class="file-input-label">
+                <i class="fas fa-upload"></i> Choose Image
+            </label>
+        </div>
+
+        <div>
+            <label for="formatSelect">Convert to:</label>
+            <select id="formatSelect">
+                <option value="png">PNG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="webp">WebP</option>
+                <option value="gif">GIF</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="compressionSelect">Target File Size:</label>
+            <select id="compressionSelect">
+                <option value="1">Original Size</option>
+                <option value="0.8">80% of Original</option>
+                <option value="0.6">60% of Original</option>
+                <option value="0.4">40% of Original</option>
+                <option value="0.2">20% of Original</option>
+            </select>
+        </div>
+
+        <div class="preview-container">
+            <img id="preview" style="display:none;">
+        </div>
+
+        <button id="convertBtn" disabled>
+            <i class="fas fa-exchange-alt"></i> Convert Image
+        </button>
+
+        <div class="loading">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <a id="downloadLink" style="display:none;">
+            <i class="fas fa-download"></i> Download Image
+        </a>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 IMGfy | Developed by <a href="https://jyotirmayswarnakar.github.io/PortfolioOfJyotirmay/" target="_blank" style="color: inherit; text-decoration: underline;">Jyotirmay Swarnakar</a></p>
+    </footer>
+
+    <script>
+        const $ = (selector) => document.querySelector(selector);
+        const formatMimeTypes = {
+            'png': 'image/png',
+            'jpeg': 'image/jpeg',
+            'webp': 'image/webp',
+            'gif': 'image/gif'
+        };
+
+        const fileInput = $('#fileInput');
+        const preview = $('#preview');
+        const convertBtn = $('#convertBtn');
+        const downloadLink = $('#downloadLink');
+        const formatSelect = $('#formatSelect');
+        const compressionSelect = $('#compressionSelect');
+        const loadingIndicator = $('.loading');
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    
+                    // Update compression options with actual file size in KB
+                    const originalSize = Math.round(file.size / 1024);
+                    compressionSelect.innerHTML = `
+                        <option value="1">Original Size (~${originalSize} KB)</option>
+                        <option value="0.8">~${Math.round(originalSize * 0.8)} KB</option>
+                        <option value="0.6">~${Math.round(originalSize * 0.6)} KB</option>
+                        <option value="0.4">~${Math.round(originalSize * 0.4)} KB</option>
+                        <option value="0.2">~${Math.round(originalSize * 0.2)} KB</option>
+                    `;
+                };
+                reader.readAsDataURL(file);
+                convertBtn.disabled = false;
+            }
+        });
+
+        convertBtn.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            convertBtn.disabled = true;
+            convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting';
+            loadingIndicator.style.display = 'block';
+
+            const img = new Image();
+            
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Calculate dimensions to maintain aspect ratio
+                let width = img.width;
+                let height = img.height;
+                
+                // Scale down dimensions based on compression level
+                const compressionLevel = parseFloat(compressionSelect.value);
+                width *= Math.sqrt(compressionLevel);
+                height *= Math.sqrt(compressionLevel);
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Use better image smoothing
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                // Draw image with new dimensions
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const selectedFormat = formatSelect.value;
+                const mimeType = formatMimeTypes[selectedFormat];
+                
+                // For JPEG, use quality parameter
+                const quality = selectedFormat === 'jpeg' ? compressionLevel : undefined;
+                const convertedDataUrl = canvas.toDataURL(mimeType, quality);
+                
+                downloadLink.href = convertedDataUrl;
+                downloadLink.download = file.name.replace(/\.[^/.]+$/, `.${selectedFormat}`);
+                downloadLink.style.display = 'block';
+                downloadLink.innerHTML = `<i class="fas fa-download"></i> Download ${selectedFormat.toUpperCase()}`;
+
+                convertBtn.disabled = false;
+                convertBtn.innerHTML = '<i class="fas fa-exchange-alt"></i> Convert Image';
+                loadingIndicator.style.display = 'none';
+            };
+            
+            img.src = URL.createObjectURL(file);
+        });
+    </script>
+</body>
+</html>
